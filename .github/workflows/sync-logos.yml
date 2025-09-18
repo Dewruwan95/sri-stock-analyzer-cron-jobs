@@ -1,0 +1,22 @@
+name: CSE Logo Data Sync
+on:
+  schedule:
+    # Run every Monday at 8:00 AM IST (02:30 UTC)
+    - cron: "30 2 * * 1"
+  workflow_dispatch:
+
+jobs:
+  sync-logos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30 # Longer timeout for logo processing
+    steps:
+      - name: Trigger Logo Sync
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          VERCEL_URL: ${{ secrets.VERCEL_URL }}
+        run: |
+          echo "🖼️ Triggering logo sync at $(date +'%Y-%m-%d %H:%M:%S %Z')"
+          curl -s --max-time 1800 -H "Authorization: Bearer $CRON_SECRET" \
+            "https://$VERCEL_URL/api/cron/sync-logos" \
+            -o /dev/null -w "HTTP Status: %{http_code}\n"
+          echo "✅ Logo sync completed at $(date +'%Y-%m-%d %H:%M:%S %Z')"

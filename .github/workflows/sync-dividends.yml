@@ -1,0 +1,22 @@
+name: CSE Dividend Data Sync
+on:
+  schedule:
+    # Run at 2:30 PM IST (09:00 UTC) every weekday
+    - cron: "0 9 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  sync-dividends:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger Dividend Sync
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          VERCEL_URL: ${{ secrets.VERCEL_URL }}
+        run: |
+          echo "💰 Triggering dividend sync at $(date +'%Y-%m-%d %H:%M:%S %Z')"
+          curl -s --max-time 300 -H "Authorization: Bearer $CRON_SECRET" \
+            "https://$VERCEL_URL/api/cron/sync-dividends" \
+            -o /dev/null -w "HTTP Status: %{http_code}\n"
+          echo "✅ Dividend sync completed at $(date +'%Y-%m-%d %H:%M:%S %Z')"

@@ -1,0 +1,22 @@
+name: CSE Company Data Sync
+on:
+  schedule:
+    # Run every 5 minutes between 4:00-9:10 UTC (9:30 AM - 2:40 PM Colombo Time)
+    - cron: "*/5 4-9 * * 1-5" # Monday to Friday
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  sync-companies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2 # Safety net
+    steps:
+      - name: Trigger Company Sync
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          VERCEL_URL: ${{ secrets.VERCEL_URL }}
+        run: |
+          echo "🚀 Triggering company sync at $(date +'%Y-%m-%d %H:%M:%S %Z')"
+          curl -s --max-time 60 -H "Authorization: Bearer $CRON_SECRET" \
+            "https://$VERCEL_URL/api/cron/sync-companies" \
+            -o /dev/null -w "HTTP Status: %{http_code}\n"
+          echo "✅ Sync completed at $(date +'%Y-%m-%d %H:%M:%S %Z')"

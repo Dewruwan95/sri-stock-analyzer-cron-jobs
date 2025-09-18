@@ -1,0 +1,21 @@
+name: CSE Sector Data Sync
+on:
+  schedule:
+    - cron: "*/10 4-9 * * 1-5" # Every 10 minutes during trading hours
+  workflow_dispatch:
+
+jobs:
+  sync-sectors:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Trigger Sector Sync
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          VERCEL_URL: ${{ secrets.VERCEL_URL }}
+        run: |
+          echo "📊 Triggering sector sync at $(date +'%Y-%m-%d %H:%M:%S %Z')"
+          curl -s --max-time 60 -H "Authorization: Bearer $CRON_SECRET" \
+            "https://$VERCEL_URL/api/cron/sync-sectors" \
+            -o /dev/null -w "HTTP Status: %{http_code}\n"
+          echo "✅ Sector sync completed at $(date +'%Y-%m-%d %H:%M:%S %Z')"
