@@ -1,0 +1,29 @@
+name: Update README Date
+on:
+  schedule:
+    # Runs every Monday at 7:00 AM IST (1:30 UTC - as IST is UTC+5:30)
+    - cron: '30 1 * * 1'
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update README with current date
+        run: |
+          # Set timezone to IST and get current date
+          CURRENT_DATE=$(TZ='Asia/Kolkata' date +"%B %d, %Y")
+          
+          # Update only the Last Updated line while preserving everything else
+          sed -i "s/Last Updated : .*/Last Updated : $CURRENT_DATE/" README.md
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "Update README date to $(TZ='Asia/Kolkata' date +"%B %d, %Y")" || exit 0
+          git push
